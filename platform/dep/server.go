@@ -9,22 +9,24 @@ import (
 )
 
 type Endpoints struct {
-	DefineProfileEndpoint    endpoint.Endpoint
-	FetchProfileEndpoint     endpoint.Endpoint
-	GetAccountInfoEndpoint   endpoint.Endpoint
-	GetDeviceDetailsEndpoint endpoint.Endpoint
-	AssignProfileEndpoint    endpoint.Endpoint
-	RemoveProfileEndpoint    endpoint.Endpoint
+	DefineProfileEndpoint        endpoint.Endpoint
+	FetchProfileEndpoint         endpoint.Endpoint
+	GetAccountInfoEndpoint       endpoint.Endpoint
+	GetDeviceDetailsEndpoint     endpoint.Endpoint
+	AssignProfileEndpoint        endpoint.Endpoint
+	RemoveProfileEndpoint        endpoint.Endpoint
+	EnableActivationLockEndpoint endpoint.Endpoint
 }
 
 func MakeServerEndpoints(s Service, outer endpoint.Middleware, others ...endpoint.Middleware) Endpoints {
 	return Endpoints{
-		AssignProfileEndpoint:    endpoint.Chain(outer, others...)(MakeAssignProfileEndpoint(s)),
-		RemoveProfileEndpoint:    endpoint.Chain(outer, others...)(MakeRemoveProfileEndpoint(s)),
-		DefineProfileEndpoint:    endpoint.Chain(outer, others...)(MakeDefineProfileEndpoint(s)),
-		FetchProfileEndpoint:     endpoint.Chain(outer, others...)(MakeFetchProfileEndpoint(s)),
-		GetAccountInfoEndpoint:   endpoint.Chain(outer, others...)(MakeGetAccountInfoEndpoint(s)),
-		GetDeviceDetailsEndpoint: endpoint.Chain(outer, others...)(MakeGetDeviceDetailsEndpoint(s)),
+		AssignProfileEndpoint:        endpoint.Chain(outer, others...)(MakeAssignProfileEndpoint(s)),
+		RemoveProfileEndpoint:        endpoint.Chain(outer, others...)(MakeRemoveProfileEndpoint(s)),
+		DefineProfileEndpoint:        endpoint.Chain(outer, others...)(MakeDefineProfileEndpoint(s)),
+		FetchProfileEndpoint:         endpoint.Chain(outer, others...)(MakeFetchProfileEndpoint(s)),
+		GetAccountInfoEndpoint:       endpoint.Chain(outer, others...)(MakeGetAccountInfoEndpoint(s)),
+		GetDeviceDetailsEndpoint:     endpoint.Chain(outer, others...)(MakeGetDeviceDetailsEndpoint(s)),
+		EnableActivationLockEndpoint: endpoint.Chain(outer, others...)(MakeEnableActivationLockEndpoint(s)),
 	}
 }
 
@@ -67,6 +69,13 @@ func RegisterHTTPHandlers(r *mux.Router, e Endpoints, options ...httptransport.S
 	r.Methods("POST").Path("/v1/dep/devices").Handler(httptransport.NewServer(
 		e.GetDeviceDetailsEndpoint,
 		decodeDeviceDetailsRequest,
+		httputil.EncodeJSONResponse,
+		options...,
+	))
+
+	r.Methods("POST").Path("/v1/dep/activationlock").Handler(httptransport.NewServer(
+		e.EnableActivationLockEndpoint,
+		decodeDeviceActivationLockRequest,
 		httputil.EncodeJSONResponse,
 		options...,
 	))

@@ -82,12 +82,24 @@ func NewHTTPClient(instance, token string, logger log.Logger, opts ...httptransp
 		).Endpoint()
 	}
 
+	var EnableActivationLockEndpoint endpoint.Endpoint
+	{
+		EnableActivationLockEndpoint = httptransport.NewClient(
+			"POST",
+			httputil.CopyURL(u, "/v1/dep/activationlock"),
+			httputil.EncodeRequestWithToken(token, httptransport.EncodeJSONRequest),
+			decodeActivationLockResponse,
+			opts...,
+		).Endpoint()
+	}
+
 	return Endpoints{
-		DefineProfileEndpoint:    defineProfileEndpoint,
-		AssignProfileEndpoint:    assignProfileEndpoint,
-		RemoveProfileEndpoint:    removeProfileEndpoint,
-		FetchProfileEndpoint:     fetchProfileEndpoint,
-		GetAccountInfoEndpoint:   getAccountInfoEndpoint,
-		GetDeviceDetailsEndpoint: getDeviceDetailsEndpoint,
+		DefineProfileEndpoint:        defineProfileEndpoint,
+		AssignProfileEndpoint:        assignProfileEndpoint,
+		RemoveProfileEndpoint:        removeProfileEndpoint,
+		FetchProfileEndpoint:         fetchProfileEndpoint,
+		GetAccountInfoEndpoint:       getAccountInfoEndpoint,
+		GetDeviceDetailsEndpoint:     getDeviceDetailsEndpoint,
+		EnableActivationLockEndpoint: EnableActivationLockEndpoint,
 	}, nil
 }
