@@ -1,9 +1,21 @@
 package dep
 
-import "github.com/pkg/errors"
+import (
+	"bytes"
+	"crypto/tls"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httputil"
+	"strings"
+
+	"github.com/pkg/errors"
+)
 
 const (
-	activationLockPath = "device/activationlock"
+	activationLockPath       = "device/activationlock"
+	activationUnlockEndpoint = "https://deviceservices-external.apple.com/deviceservicesworkers/escrowKeyUnlock"
 )
 
 type ActivationLockRequest struct {
@@ -31,4 +43,51 @@ func (c *Client) ActivationLock(alr *ActivationLockRequest) (*ActivationLockResp
 	var response ActivationLockResponse
 	err = c.do(req, &response)
 	return &response, errors.Wrap(err, "activation lock")
+}
+
+type ActivationUnlockRequest struct {
+	Querystring string `json:"querystring"`
+	Messagebody string `json:"messagebody"`
+}
+
+func (c *Client) ActivationUnlock(alur *ActivationUnlockRequest) (interface{}, error) {
+	cert, err1 := tls.LoadX509KeyPair("/root/apns/appleapncert.pem", "/root/apns/private.key")
+	if err1 != nil {
+		log.Fatal(err1)
+	}
+
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	httpclient := &http.Client{Transport: transport}
+
+	fmt.Println(alur.Querystring)
+	URLparts := []string{activationUnlockEndpoint, "?", alur.Querystring}
+	var RequestURL = strings.Join(URLparts, "")
+	var Messagebody = alur.Messagebody
+	fmt.Println(RequestURL)
+	fmt.Println(Messagebody)
+
+	var buffer bytes.Buffer
+	buffer.WriteString(Messagebody)
+	fmt.Println(buffer.String())
+	req, err := http.NewRequest("POST", RequestURL, &buffer)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Add("Accept", "*/*")
+	reqDump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("REQUEST:\n%s", string(reqDump))
+	var response *http.Response
+	response, _ = httpclient.Do(req)
+	data, err := ioutil.ReadAll(response.Body)
+	fmt.Println(data)
+	return data, err
 }

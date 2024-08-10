@@ -16,6 +16,7 @@ type Service interface {
 	GetDeviceDetails(ctx context.Context, serials []string) (*dep.DeviceDetailsResponse, error)
 	FetchProfile(ctx context.Context, uuid string) (*dep.Profile, error)
 	EnableActivationLock(ctx context.Context, serial string, escrow_key string, lost_message string) (*dep.ActivationLockResponse, error)
+	EnableActivationUnlock(ctx context.Context, Querystring string, Messagebody string) (interface{}, error)
 }
 
 type DEPClient interface {
@@ -26,6 +27,7 @@ type DEPClient interface {
 	Account() (*dep.Account, error)
 	DeviceDetails(...string) (*dep.DeviceDetailsResponse, error)
 	ActivationLock(*dep.ActivationLockRequest) (*dep.ActivationLockResponse, error)
+	ActivationUnlock(*dep.ActivationUnlockRequest) (interface{}, error)
 }
 
 type DEPService struct {

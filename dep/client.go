@@ -3,6 +3,7 @@ package dep
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -208,6 +209,8 @@ func (c *Client) do(req *http.Request, into interface{}) error {
 		return errors.Wrap(err, "perform dep request")
 	}
 	defer resp.Body.Close()
+
+	fmt.Println(resp.StatusCode)
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)

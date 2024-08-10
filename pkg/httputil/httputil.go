@@ -4,8 +4,10 @@ import (
 	"context"
 	"crypto/subtle"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
@@ -49,6 +51,29 @@ func EncodeJSONResponse(ctx context.Context, w http.ResponseWriter, response int
 	enc := json.NewEncoder(w)
 	enc.SetIndent("", "  ")
 	return enc.Encode(response)
+}
+
+func EncodeXMLResponse(ctx context.Context, w http.ResponseWriter, response interface{}) error {
+	if f, ok := response.(failer); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	if headerer, ok := response.(httptransport.Headerer); ok {
+		for k, values := range headerer.Headers() {
+			for _, v := range values {
+				w.Header().Add(k, v)
+			}
+		}
+	}
+	w.Header().Set("Content-Type", "application/xml")
+
+	code := http.StatusOK
+	if sc, ok := response.(httptransport.StatusCoder); ok {
+		code = sc.StatusCode()
+	}
+	w.WriteHeader(code)
+	w.Write([]byte(response.([]byte)))
+	return nil
 }
 
 func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
@@ -128,6 +153,13 @@ func DecodeJSONResponse(r *http.Response, into interface{}) error {
 	}
 
 	err := json.NewDecoder(r.Body).Decode(into)
+	return err
+}
+
+func DecodeXMLResponse(r *http.Response, into interface{}) error {
+	defer r.Body.Close()
+	data, _ := ioutil.ReadAll(r.Body)
+	err := xml.Unmarshal(data, &into)
 	return err
 }
 
