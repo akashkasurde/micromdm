@@ -11,7 +11,7 @@ import (
 type depaccountTableOutput struct{ w *tabwriter.Writer }
 
 func (out *depaccountTableOutput) BasicHeader() {
-	fmt.Fprintf(out.w, "OrgName\tOrgPhone\tOrgEmail\tServerName\n")
+	fmt.Fprintf(out.w, "OrgName\tOrgPhone\tOrgEmail\tServerName\tServerUUID\n")
 }
 
 func (out *depaccountTableOutput) BasicFooter() {
@@ -24,7 +24,7 @@ func (cmd *getCommand) getDEPAccount(args []string) error {
 	if err := flagset.Parse(args); err != nil {
 		return err
 	}
-	w := tabwriter.NewWriter(os.Stdout, 0, 4, 2, ' ', 0)
+	w := tabwriter.NewWriter(os.Stdout, 0, 5, 2, ' ', 0)
 	out := &depaccountTableOutput{w}
 	out.BasicHeader()
 	defer out.BasicFooter()
@@ -33,6 +33,6 @@ func (cmd *getCommand) getDEPAccount(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Fprintf(out.w, "%s\t%s\t%s\t%s\n", resp.OrgName, resp.OrgPhone, resp.OrgEmail, resp.ServerName)
+	fmt.Fprintf(out.w, "%s\t%s\t%s\t%s\t%s\n", resp.OrgName, resp.OrgPhone, resp.OrgEmail, resp.ServerName, resp.ServerUUID)
 	return nil
 }

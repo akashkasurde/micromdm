@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -63,12 +62,9 @@ func (c *Client) ActivationUnlock(alur *ActivationUnlockRequest) (interface{}, e
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 	httpclient := &http.Client{Transport: transport}
 
-	fmt.Println(alur.Querystring)
 	URLparts := []string{activationUnlockEndpoint, "?", alur.Querystring}
 	var RequestURL = strings.Join(URLparts, "")
 	var Messagebody = alur.Messagebody
-	fmt.Println(RequestURL)
-	fmt.Println(Messagebody)
 
 	var buffer bytes.Buffer
 	buffer.WriteString(Messagebody)
@@ -79,15 +75,9 @@ func (c *Client) ActivationUnlock(alur *ActivationUnlockRequest) (interface{}, e
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("Accept", "*/*")
-	reqDump, err := httputil.DumpRequestOut(req, true)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	fmt.Printf("REQUEST:\n%s", string(reqDump))
 	var response *http.Response
 	response, _ = httpclient.Do(req)
 	data, err := ioutil.ReadAll(response.Body)
-	fmt.Println(data)
 	return data, err
 }
