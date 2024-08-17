@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"path"
 	"strings"
@@ -204,19 +206,25 @@ func (c *Client) do(req *http.Request, into interface{}) error {
 	}
 	req.Header.Add("X-ADM-Auth-Session", c.authSessionToken)
 
+	dump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("%q", dump)
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return errors.Wrap(err, "perform dep request")
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(resp.StatusCode)
-
 	if resp.StatusCode != http.StatusOK {
 		body, _ := ioutil.ReadAll(resp.Body)
 		return errors.Errorf("unexpected dep response. status=%d DEP API Error: %s", resp.StatusCode, string(body))
 	}
 	err = json.NewDecoder(resp.Body).Decode(into)
+	// fmt.Println(into)
 	return errors.Wrap(err, "decode DEP response body")
 
 }

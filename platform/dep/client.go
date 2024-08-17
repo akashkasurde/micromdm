@@ -104,6 +104,17 @@ func NewHTTPClient(instance, token string, logger log.Logger, opts ...httptransp
 		).Endpoint()
 	}
 
+	var disownDeviceEndpoint endpoint.Endpoint
+	{
+		disownDeviceEndpoint = httptransport.NewClient(
+			"POST",
+			httputil.CopyURL(u, "/v1/dep/disowndevice"),
+			httputil.EncodeRequestWithToken(token, httptransport.EncodeJSONRequest),
+			decodeDisownDeviceResponse,
+			opts...,
+		).Endpoint()
+	}
+
 	return Endpoints{
 		DefineProfileEndpoint:          defineProfileEndpoint,
 		AssignProfileEndpoint:          assignProfileEndpoint,
@@ -113,5 +124,6 @@ func NewHTTPClient(instance, token string, logger log.Logger, opts ...httptransp
 		GetDeviceDetailsEndpoint:       getDeviceDetailsEndpoint,
 		EnableActivationLockEndpoint:   EnableActivationLockEndpoint,
 		EnableActivationUnlockEndpoint: EnableActivationUnlockEndpoint,
+		DisownDeviceEndPoint:           disownDeviceEndpoint,
 	}, nil
 }
