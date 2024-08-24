@@ -20,7 +20,7 @@ import (
 const (
 	SyncTopic = "mdm.DepSync"
 
-	syncDuration        = 30 * time.Minute
+	syncDuration        = 3 * time.Minute
 	cursorValidDuration = 7 * 24 * time.Hour
 )
 
