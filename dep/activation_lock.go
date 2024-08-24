@@ -3,7 +3,6 @@ package dep
 import (
 	"bytes"
 	"crypto/tls"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -68,7 +67,6 @@ func (c *Client) ActivationUnlock(alur *ActivationUnlockRequest) (interface{}, e
 
 	var buffer bytes.Buffer
 	buffer.WriteString(Messagebody)
-	fmt.Println(buffer.String())
 	req, err := http.NewRequest("POST", RequestURL, &buffer)
 	if err != nil {
 		return nil, err
