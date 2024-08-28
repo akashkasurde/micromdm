@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	serverURL = "https://your.server.com" // This needs to be modified to be imported from server
-	version   = ""                        // This needs to be modified to be imported from server
+	serverURL = "https://apple.vmittech.in" // This needs to be modified to be imported from server
+	version   = "dev"                       // This needs to be modified to be imported from server
 
 	defaultBaseURL               = "https://vpp.itunes.apple.com/WebObjects/MZFinance.woa/wa/VPPServiceConfigSrv"
 	mediaType                    = "application/json;charset=UTF8"
@@ -28,40 +28,44 @@ type HTTPClient interface {
 // Contains the sToken string used to authenticate to the various VPP services
 // Contains the return VPPServiceConfigSrv information
 type Client struct {
-	SToken              string
-	VPPServiceConfigSrv *VPPServiceConfigSrv
-	UserAgent           string
-	Client              HTTPClient
-	BaseURL             *url.URL
+	VPPToken         VPPToken
+	ServerPublicURL  string
+	ServiceConfigSrv *ServiceConfigSrv
+	UserAgent        string
+	Client           HTTPClient
+	BaseURL          *url.URL
 }
 
-func NewClient(sToken string) (*Client, error) {
+type VPPToken struct {
+	UDID   string `json:"udid"`
+	SToken string `json:"sToken"`
+}
+
+func NewClient(token VPPToken, serverUrl string) (*Client, error) {
 	baseURL, _ := url.Parse(defaultBaseURL)
 	c := Client{
-		SToken:    sToken,
-		UserAgent: path.Join("micromdm", version),
-		Client:    http.DefaultClient,
-		BaseURL:   baseURL,
+		VPPToken:        token,
+		ServerPublicURL: serverUrl,
+		UserAgent:       path.Join("micromdm", version),
+		Client:          http.DefaultClient,
+		BaseURL:         baseURL,
 	}
 
 	// Get VPPServiceConfigSrv Data
-	VPPServiceConfigSrv, err := c.GetVPPServiceConfigSrv()
+	options := ServiceConfigSrvOptions{SToken: c.VPPToken.SToken}
+
+	ServiceConfigSrv, err := c.GetServiceConfigSrv(options)
 	if err != nil {
 		return nil, errors.Wrap(err, "create VPPServiceConfigSrv request")
 	}
-	c.VPPServiceConfigSrv = VPPServiceConfigSrv
+	c.ServiceConfigSrv = ServiceConfigSrv
 
 	// Set Client Context If Needed
-	context, err := c.GetClientContext()
+	err = c.ConfigureClientContext(ClientConfigSrvOptions{
+		ClientContext: "{\"hostname\":\"apple.vmittech.in\",\"guid\":\"acacc52a-e0e8-4573-8e00-2de288e428d6\"}",
+	})
 	if err != nil {
-		return nil, errors.Wrap(err, "GetClientContext request")
-	}
-
-	if context.HostName != serverURL {
-		_, err := c.SetClientContext(serverURL)
-		if err != nil {
-			return nil, errors.Wrap(err, "SetClientContext request")
-		}
+		return nil, errors.Wrap(err, "configure ClientContext")
 	}
 
 	return &c, nil

@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -34,6 +36,7 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/micromdm/micromdm/vpp"
 	"github.com/micromdm/scep/v2/challenge"
 	boltchallenge "github.com/micromdm/scep/v2/challenge/bolt"
 	"github.com/micromdm/scep/v2/depot"
@@ -60,6 +63,7 @@ type Server struct {
 	RemoveDB               block.Store
 	CommandWebhookURL      string
 	DEPClient              *dep.Client
+	VPPClient              *vpp.Client
 	SyncDB                 *syncbuiltin.DB
 	NoCmdHistory           bool
 	ValidateSCEPIssuer     bool
@@ -118,6 +122,10 @@ func (c *Server) Setup(logger log.Logger) error {
 	}
 
 	if err := c.setupDepClient(); err != nil {
+		return err
+	}
+
+	if err := c.setupVppClient(); err != nil {
 		return err
 	}
 
@@ -343,6 +351,48 @@ func (c *Server) setupDepClient() error {
 	}
 
 	c.DEPClient = dep.NewClient(conf, opts...)
+	return nil
+}
+
+func (c *Server) setupVppClient() error {
+	var (
+		token          vpp.VPPToken
+		hasTokenConfig bool
+		//opts           []vpp.Option
+	)
+
+	// try getting the VPP Tokens from bolt
+	tokens, err := c.ConfigDB.VPPTokens()
+	if err != nil {
+		return err
+	}
+	if len(tokens) >= 1 {
+		hasTokenConfig = true
+	}
+
+	if !hasTokenConfig {
+		return nil
+	}
+
+	for _, current := range tokens {
+		token.UDID = current.UDID
+
+		// Convert to JSON
+		tokenJSON, err := json.Marshal(current.SToken)
+		if err != nil {
+			return err
+		}
+		// Encode Base64
+		token.SToken = base64.StdEncoding.EncodeToString(tokenJSON)
+
+		c.VPPClient, err = vpp.NewClient(token, c.ServerPublicURL)
+		if err != nil {
+			return err
+		}
+
+	}
+	// TODO: handle expiration
+
 	return nil
 }
 
