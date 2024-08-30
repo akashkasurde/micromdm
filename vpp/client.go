@@ -62,7 +62,7 @@ func NewClient(token VPPToken, serverUrl string) (*Client, error) {
 
 	// Set Client Context If Needed
 	err = c.ConfigureClientContext(ClientConfigSrvOptions{
-		ClientContext: "{\"hostname\":\"apple.vmittech.in\",\"guid\":\"acacc52a-e0e8-4573-8e00-2de288e428d6\"}",
+		ClientContext: "{\"hostname\":\"\",\"guid\":\"\"}",
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "configure ClientContext")

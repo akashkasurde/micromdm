@@ -94,21 +94,17 @@ func (c *Client) ConfigureClientContext(options ClientConfigSrvOptions) error {
 func (c *Client) GetClientContext(options ClientConfigSrvOptions) (*ClientContext, error) {
 
 	// Get the ClientConfigSrv info
-	fmt.Println(options)
 	clientConfigSrv, err := c.GetClientConfigSrv(options)
 	if err != nil {
 		return nil, errors.Wrap(err, "get ClientContext request")
 	}
-	fmt.Println(clientConfigSrv)
 	// Get the ClientContext string
 	var clientContext ClientContext
 	var context = clientConfigSrv.ClientContext
-	fmt.Println(context)
 	if context != "" {
 		// Convert the string to a ClientContext type
 		err = DecodeToClientContext(context, &clientContext)
 		if err != nil {
-			fmt.Println("decode error ???")
 			return nil, errors.Wrap(err, "get ClientContext")
 		}
 	} else {
@@ -124,7 +120,6 @@ func (c *Client) SetClientContext(options ClientConfigSrvOptions) (*ClientContex
 
 	// Generate a ClientContext string with the UDID and the current ServerPublicURL
 	context := ClientContext{c.ServerPublicURL, c.VPPToken.UDID}
-	fmt.Println("context set is getting called")
 	data, err := json.Marshal(context)
 	if err != nil {
 		return nil, errors.Wrap(err, "create new ClientContext")

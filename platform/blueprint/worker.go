@@ -2,6 +2,7 @@ package blueprint
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -92,6 +93,7 @@ func (w *Worker) handleTokenUpdateEvent(ctx context.Context, message []byte) err
 	if err := mdmsvc.UnmarshalCheckinEvent(message, &ev); err != nil {
 		return errors.Wrap(err, "unmarshal checkin event")
 	}
+
 	if ev.Command.UserID != "" {
 		level.Debug(w.logger).Log(
 			"msg", "skipping user token update in blueprint worker.",
@@ -241,7 +243,7 @@ func (w *Worker) applyToDevice(ctx context.Context, bp Blueprint, udid string) e
 			},
 		})
 	}
-
+	fmt.Println(requests)
 	for _, r := range requests {
 		if _, err := w.cmdsvc.NewCommand(ctx, r); err != nil {
 			return errors.Wrap(err, "create new command from blueprint")
