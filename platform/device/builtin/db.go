@@ -66,15 +66,27 @@ func (db *DB) List(ctx context.Context, opt device.ListDevicesOption) ([]device.
 			if err := device.UnmarshalDevice(v, &dev); err != nil {
 				return err
 			}
-			if len(opt.FilterSerial) == 0 {
+			if len(opt.FilterSerial) == 0 && len(opt.FilterUDID) == 0 {
 				devices = append(devices, dev)
 				return nil
 			}
-			for _, fs := range opt.FilterSerial {
-				if fs == dev.SerialNumber {
-					devices = append(devices, dev)
+
+			if len(opt.FilterSerial) > 0 {
+				for _, fs := range opt.FilterSerial {
+					if fs == dev.SerialNumber {
+						devices = append(devices, dev)
+					}
 				}
 			}
+
+			if len(opt.FilterUDID) > 0 {
+				for _, fs := range opt.FilterUDID {
+					if fs == dev.UDID {
+						devices = append(devices, dev)
+					}
+				}
+			}
+
 			return nil
 		})
 	})
