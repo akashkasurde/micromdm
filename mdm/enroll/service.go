@@ -20,10 +20,10 @@ import (
 )
 
 const (
-	EnrollmentProfileId string = "com.github.micromdm.micromdm.enroll"
-	OTAProfileId        string = "com.github.micromdm.micromdm.ota"
+	EnrollmentProfileId string = "com.github.vmit.vmit.enroll"
+	OTAProfileId        string = "com.github.vmit.vmit.ota"
 
-	profilePayloadOrganization = "MicroMDM"
+	profilePayloadOrganization = "VMIT"
 	profilePayloadDisplayName  = "Enrollment Profile"
 	profilePayloadDescription  = "The server may alter your settings"
 

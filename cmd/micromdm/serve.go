@@ -188,7 +188,7 @@ func serve(args []string) error {
 		// being prompted for the SCEP challenge which happens in a "normal"
 		// (non-DEP) enrollment. While security is not improved it is at least
 		// no less secure and prevents a useless dialog from showing.
-		sm.SCEPChallenge = "vmit"
+		sm.SCEPChallenge = "micromdm"
 	}
 
 	if err := sm.Setup(logger); err != nil {
