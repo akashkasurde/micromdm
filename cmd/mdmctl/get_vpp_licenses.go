@@ -41,6 +41,8 @@ func (cmd *getCommand) getVPPLicenses(args []string) error {
 	ctx := context.Background()
 
 	var options vpp.LicensesSrvOptions
+	options.AssignedOnly = true
+
 	if *flIDFilter != "" {
 		options.AdamID = *flIDFilter
 	}
